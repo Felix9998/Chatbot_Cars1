@@ -28,7 +28,7 @@ def log_interaction(message, action):
 def save_interactions_to_file(path='downloads'):
     os.makedirs(path, exist_ok=True)
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    filename = f"cara_ohneExplanation_{timestamp}.csv"
+    filename = f"cine_noExplanation_{timestamp}.csv"
     filepath = os.path.join(path, filename)
     try:
         with open(filepath, 'w', newline='', encoding='utf-8') as f:
@@ -52,107 +52,114 @@ def interactions_csv_bytes():
 
 
 def generate_recommendations(preferences):
-    names = ["Zirell Avantis", "Velvra Monaro", "Tirora Qyra"]
-    ratings = ["4,2/5 Sterne (155 Bewertungen)", "4,3/5 Sterne (152 Bewertungen)", "4,25/5 Sterne (150 Bewertungen)"]
-    von = preferences.get('Preis von', 5000)
-    bis = preferences.get('Preis bis', 100000)
-    base_price = int(round(((von + bis) / 2) / 5.0) * 5)
-    price_values = [base_price - 50, base_price, base_price + 50]
-    price_values = [max(von, min(bis, p)) for p in price_values]
-
-    def format_price(p):
-        s = f"{p:,.0f}".replace(',', '.')
-        return f"{s} €"
-
-    prices = [format_price(p) for p in price_values]
-    random.shuffle(names)
-    random.shuffle(ratings)
-    random.shuffle(prices)
-    recs = [{'name': names[i], 'rating': ratings[i], 'price': prices[i]} for i in range(3)]
+    # Fixed recommendations for NoExplanation variant
+    names = ["Chronos V", "Das letzte Echo", "Schatten im Nebel"]
+    recs = []
+    for name in names:
+        anzahl = random.randint(13000, 15000)
+        imdb_ranking = random.randint(1, 5000)
+        recs.append({
+            'name': name,
+            'anzahl_bewertungen': anzahl,
+            'imdb_ranking': imdb_ranking
+        })
     return recs
 
 
 def main():
     ensure_session_state()
 
-    st.set_page_config(page_title='Cara — digitales Autohaus', layout='centered')
-    st.markdown(f"<h1 style='color:{PRIMARY_COLOR}; text-align: center;'>Cara</h1>", unsafe_allow_html=True)
+    st.set_page_config(page_title='CineMate — digitales Film-Assistent', layout='centered')
+    st.markdown(f"<h1 style='color:{PRIMARY_COLOR}; text-align: center;'>CineMate</h1>", unsafe_allow_html=True)
 
-    st.write("Hallo! 👋 Ich bin Cara von Carage — ich helfe dir, ein passendes Fahrzeug zu finden.\n\n")
+    st.write("Hallo! Ich bin CineMate – dein digitaler Film-Assistent. Ich unterstütze dich bei der Suche nach einem Film.")
+    st.write("Bitte gib an, welche drei der folgenden sechs Genres du bevorzugst. Wähle intuitiv aus.")
 
-    # Traits selection (require exactly 3)
-    traits = ["Groß", "Klein", "Sportlich", "Luxuriös", "Leistungsstark", "Alltagstauglich"]
-    selected_traits = st.multiselect("Wähle genau 3 Merkmale, die dir wichtig sind:", traits, key='traits_select', placeholder="Merkmale wählen")
+    # Genres selection (require exactly 3)
+    genres = ["Komödie", "Drama", "Action", "Science-Fiction", "Horror", "Thriller"]
+    selected_genres = st.multiselect("Wähle genau 3 Genres:", genres, key='genres_select', placeholder="Genres wählen")
 
-    # Validation: Groß und Klein dürfen nicht zusammen gewählt werden
-    if "Groß" in selected_traits and "Klein" in selected_traits:
-        st.error("⚠️ 'Groß' und 'Klein' schließen sich aus — bitte wähle nur eines davon.")
-    elif len(selected_traits) != 3:
-        st.info("Bitte wähle genau 3 Merkmale aus.")
+    if len(selected_genres) != 3:
+        st.info("Bitte wähle genau 3 Genres aus.")
     else:
-        st.session_state['preferences']['Persönlichkeitsmerkmale'] = selected_traits
-        log_interaction(f"Traits selected: {selected_traits}", 'trait_selected')
+        st.session_state['preferences']['Genres'] = selected_genres
+        st.write("Danke. Auswahl gespeichert. Bitte gib jetzt die spezifischen Filterkriterien ein.")
+        log_interaction(f"Genres selected: {selected_genres}", 'genres_selected')
 
     st.markdown("---")
 
-    # Configuration (responsive for mobile)
-    st.subheader('📋 Deine Fahrzeugwünsche')
-    fahrzeugtyp = st.selectbox('Fahrzeugtyp', ['Gebrauchtwagen', 'Neuwagen'], key='fahrzeugtyp')
-    kraftstoff = st.selectbox('Kraftstoff', ['Elektrisch', 'Benzin', 'Diesel'], key='kraftstoff')
-    sitzplaetze = st.number_input('Sitzplätze', min_value=2, max_value=9, value=4, key='sitzplaetze')
+    # Film configuration
+    st.subheader('📋 Deine Filmauswahl')
 
-    st.markdown('**Preisvorstellung (in €)**')
-    price_col1, price_col2 = st.columns(2, gap='small')
-    with price_col1:
-        preis_von = st.number_input('von', min_value=0, max_value=1000000, value=5000, step=100, label_visibility='collapsed')
-    with price_col2:
-        preis_bis = st.number_input('bis', min_value=0, max_value=1000000, value=30000, step=100, label_visibility='collapsed')
+    era = st.selectbox('Ära / Erscheinungszeitraum', ['Klassiker (<2000)', 'Modern (2000+)'], key='era')
+    visual_style = st.selectbox('Visueller Stil', ['Realfilm', 'Animation', 'Schwarz-Weiß'], key='visual_style')
+
+    laufzeit = st.number_input('Gewünschte Laufzeit (Minuten)', min_value=60, max_value=240, value=120, step=5, key='laufzeit')
+
+    st.markdown('**IMDb-Rating (Bereich)**')
+    rating_col1, rating_col2 = st.columns(2, gap='small')
+    with rating_col1:
+        imdb_von = st.number_input('von', min_value=1.0, max_value=10.0, value=6.0, step=0.1, format="%.1f", label_visibility='collapsed')
+    with rating_col2:
+        imdb_bis = st.number_input('bis', min_value=1.0, max_value=10.0, value=9.0, step=0.1, format="%.1f", label_visibility='collapsed')
 
     # Save preferences in session
     st.session_state['preferences'].update({
-        'Fahrzeugtyp': fahrzeugtyp,
-        'Kraftstoff': kraftstoff,
-        'Sitzplätze': sitzplaetze,
-        'Preis von': int(preis_von),
-        'Preis bis': int(preis_bis)
+        'Ära': era,
+        'Visueller Stil': visual_style,
+        'Laufzeit': int(laufzeit),
+        'IMDb von': float(imdb_von),
+        'IMDb bis': float(imdb_bis)
     })
 
     # Generate button
     if st.button('Empfehlung generieren'):
         # Validation
-        if len(st.session_state['preferences'].get('Persönlichkeitsmerkmale', [])) < 3:
-            st.error('Bitte wähle genau 3 Merkmale.')
-        elif st.session_state['preferences']['Preis von'] < 5000 or st.session_state['preferences']['Preis bis'] > 100000:
-            st.error('Der angegebene Preis sollte zwischen 5.000 € und 100.000 € liegen.')
+        if len(st.session_state['preferences'].get('Genres', [])) < 3:
+            st.error('Bitte wähle genau 3 Genres.')
+        elif st.session_state['preferences']['IMDb von'] < 1 or st.session_state['preferences']['IMDb bis'] > 10:
+            st.error('Der IMDb-Rating-Bereich muss zwischen 1.0 und 10.0 liegen.')
+        elif st.session_state['preferences']['IMDb von'] > st.session_state['preferences']['IMDb bis']:
+            st.error('Der untere Wert des IMDb-Rating-Bereichs darf nicht größer sein als der obere Wert.')
         else:
             log_interaction('Config saved', 'config_saved')
-            with st.spinner('Cara verarbeitet deine Eingaben...'):
-                # Short staged messages (keep UX responsive)
-                st.info(f"Wichtige Merkmale: {', '.join(st.session_state['preferences']['Persönlichkeitsmerkmale'])}")
-                st.write('Die Konfiguration dient als Grundlage für die Auswahl.')
+            with st.spinner('CineMate verarbeitet deine Eingaben...'):
+                # Reasoning (no explanation) - 4 Schritte
+                g1, g2, g3 = st.session_state['preferences']['Genres']
+                cfg = {
+                    'Ära': st.session_state['preferences']['Ära'],
+                    'Visueller Stil': st.session_state['preferences']['Visueller Stil'],
+                    'Laufzeit': st.session_state['preferences']['Laufzeit'],
+                    'IMDb von': st.session_state['preferences']['IMDb von'],
+                    'IMDb bis': st.session_state['preferences']['IMDb bis']
+                }
+                st.write(f"Die Eingaben werden verarbeitet, um passende Filme zu finden. Genres: {g1}, {g2} und {g3}.")
+                st.write(f"Die Konfiguration ({cfg}) dient als Grundlage für die Filmauswahl.")
+                st.write("Kontrollhinweis: Die IMDb Datenbank umfasst über 6 Millionen Titel.")
+                st.write("Hier sind die drei besten Treffer aus meiner Datenbank.")
+
                 recs = generate_recommendations(st.session_state['preferences'])
                 st.session_state['recommendations'] = recs
                 log_interaction('Recommendation generated', 'recommendation_generated')
 
     # Show recommendations if available
     if st.session_state.get('recommendations'):
-        st.markdown('### 🚗 Empfehlungen')
+        st.markdown('### 🍿 Empfehlungen')
         recs = st.session_state['recommendations']
-        
-        # Display recommendations in mobile-friendly format
+
         for i, r in enumerate(recs):
             with st.container():
-                col_left, col_right = st.columns([2, 1], gap='medium')
+                col_left, col_right = st.columns([3, 1], gap='medium')
                 with col_left:
                     st.markdown(f"**{r['name']}**")
-                    st.write(f"⭐ {r['rating']}")
+                    count_formatted = f"{r['anzahl_bewertungen']:,}".replace(',', '.')
+                    st.write(f"Anzahl Bewertungen: {count_formatted}")
                 with col_right:
-                    st.markdown(f"**{r['price']}**")
+                    st.markdown(f"**IMDb-Ranking: #{r['imdb_ranking']}**")
                 st.divider()
-        
-        st.success('✅ Empfehlungen geladen!')
-        st.write("Bitte fahren Sie jetzt mit dem Fragebogen fort.")
 
+        st.success('✅ Empfehlungen geladen!')
+        st.write('Bitte fahre jetzt mit dem Fragebogen fort.')
 
 
 if __name__ == '__main__':
