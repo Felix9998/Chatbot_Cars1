@@ -159,7 +159,7 @@ def main():
                 st.divider()
 
         st.success('✅ Empfehlungen geladen!')
-        st.write('Bitte fahre jetzt mit dem Fragebogen fort.')
+        st.write('Bitte gib in das Textfeld den Code 01 ein. Danach kann mit dem Fragebogen fortgefahren werden')
 
 
 if __name__ == '__main__':
