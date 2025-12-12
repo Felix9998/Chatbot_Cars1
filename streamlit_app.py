@@ -87,34 +87,34 @@ def main():
     ensure_session_state()
 
     # Seiteneinstellungen & Titel
-   st.set_page_config(page_title='CineMate — digitaler Film-Assistent', layout='centered')
-   st.markdown(f"<h1 style='color:{PRIMARY_COLOR}; text-align: center;'>CineMate</h1>", unsafe_allow_html=True)
+    st.set_page_config(page_title='CineMate — digitaler Film-Assistent', layout='centered')
+    st.markdown(f"<h1 style='color:{PRIMARY_COLOR}; text-align: center;'>CineMate</h1>", unsafe_allow_html=True)
 
-   st.write("Hallo! Ich bin CineMate – dein digitaler Film-Assistent.")
-   st.write("Bitte gib an, welche drei der folgenden sechs Genres du bevorzugst. Wähle intuitiv aus.")
+    st.write("Hallo! Ich bin CineMate – dein digitaler Film-Assistent.")
+    st.write("Bitte gib an, welche drei der folgenden sechs Genres du bevorzugst. Wähle intuitiv aus.")
 
-   # Genre-Auswahl (genau 3 erforderlich)
-   genres=["Komödie","Drama","Action","Science-Fiction","Horror","Thriller"]
-   selected_genres=_st.multiselect("Wähle genau 3 Genres:",genres,key="genres_select",placeholder="Genres wählen")
+    # Genre-Auswahl (genau 3 erforderlich)
+    genres = ["Komödie", "Drama", "Action", "Science-Fiction", "Horror", "Thriller"]
+    selected_genres = st.multiselect("Wähle genau 3 Genres:", genres, key="genres_select", placeholder="Genres wählen")
 
-   if len(selected_genres)!=3:
-       st.info("Bitte wähle genau 3 Genres aus.")
-   else:
-       st.session_state["preferences"]["Genres"]=selected_genres
-       st.write("Danke. Auswahl gespeichert. Bitte gib jetzt die spezifischen Filterkriterien ein.")
-       log_interaction(f"Genres selected: {selected_genres}","genres_selected")
+    if len(selected_genres) != 3:
+        st.info("Bitte wähle genau 3 Genres aus.")
+    else:
+        st.session_state["preferences"]["Genres"] = selected_genres
+        st.write("Danke. Auswahl gespeichert. Bitte gib jetzt die spezifischen Filterkriterien ein.")
+        log_interaction(f"Genres selected: {selected_genres}", "genres_selected")
 
-       # Automatisch zur Filmauswahl scrollen (mit ID)
-       markdown("""
-           <script>
-               setTimeout(function() {
-                   var element=document.getElementById('filmauswahl');
-                   if(element){
-                       element.scrollIntoView({behavior:'smooth',block:'start'});
-                   }
-               },500);
-           </script>
-       """,unsafe_allow_html=True)
+        # Automatisch zur Filmauswahl scrollen
+        st.markdown("""
+            <script>
+                setTimeout(function() {
+                    var element = document.getElementById('filmauswahl');
+                    if (element) {
+                        element.scrollIntoView({behavior:'smooth', block:'start'});
+                    }
+                }, 500);
+            </script>
+        """, unsafe_allow_html=True)
 
    _st.markdown("---")
 
