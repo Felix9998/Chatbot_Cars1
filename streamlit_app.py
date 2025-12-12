@@ -116,7 +116,7 @@ def main():
             </script>
         """, unsafe_allow_html=True)
 
-   _st.markdown("---")
+   st.markdown("---")
 
    # Abschnitt mit ID für Scrollziel „Filmauswahl“
    st.markdown("<div id='filmauswahl'></div>",unsafe_allow_html=True)
