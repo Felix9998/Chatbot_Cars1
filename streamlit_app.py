@@ -87,25 +87,25 @@ def main():
     ensure_session_state()
 
     # Seiteneinstellungen & Titel
-   _st.set_page_config(page_title='CineMate — digitaler Film-Assistent', layout='centered')
-   _st.markdown(f"<h1 style='color:{PRIMARY_COLOR}; text-align: center;'>CineMate</h1>", unsafe_allow_html=True)
+   st.set_page_config(page_title='CineMate — digitaler Film-Assistent', layout='centered')
+   st.markdown(f"<h1 style='color:{PRIMARY_COLOR}; text-align: center;'>CineMate</h1>", unsafe_allow_html=True)
 
-   _st.write("Hallo! Ich bin CineMate – dein digitaler Film-Assistent.")
-   _st.write("Bitte gib an, welche drei der folgenden sechs Genres du bevorzugst. Wähle intuitiv aus.")
+   st.write("Hallo! Ich bin CineMate – dein digitaler Film-Assistent.")
+   st.write("Bitte gib an, welche drei der folgenden sechs Genres du bevorzugst. Wähle intuitiv aus.")
 
    # Genre-Auswahl (genau 3 erforderlich)
    genres=["Komödie","Drama","Action","Science-Fiction","Horror","Thriller"]
    selected_genres=_st.multiselect("Wähle genau 3 Genres:",genres,key="genres_select",placeholder="Genres wählen")
 
    if len(selected_genres)!=3:
-       _st.info("Bitte wähle genau 3 Genres aus.")
+       st.info("Bitte wähle genau 3 Genres aus.")
    else:
-       _st.session_state["preferences"]["Genres"]=selected_genres
-       _st.write("Danke. Auswahl gespeichert. Bitte gib jetzt die spezifischen Filterkriterien ein.")
+       st.session_state["preferences"]["Genres"]=selected_genres
+       st.write("Danke. Auswahl gespeichert. Bitte gib jetzt die spezifischen Filterkriterien ein.")
        log_interaction(f"Genres selected: {selected_genres}","genres_selected")
 
        # Automatisch zur Filmauswahl scrollen (mit ID)
-      __markdown__("""
+       markdown("""
            <script>
                setTimeout(function() {
                    var element=document.getElementById('filmauswahl');
@@ -119,25 +119,25 @@ def main():
    _st.markdown("---")
 
    # Abschnitt mit ID für Scrollziel „Filmauswahl“
-   _st.markdown("<div id='filmauswahl'></div>",unsafe_allow_html=True)
-   _st.subheader('📋 Deine Filmauswahl')
+   st.markdown("<div id='filmauswahl'></div>",unsafe_allow_html=True)
+   st.subheader('📋 Deine Filmauswahl')
 
    era=_st.selectbox('Ära / Erscheinungszeitraum',['Klassiker (<2000)','Modern (2000+)'],key='era')
    visual_style=_st.selectbox('Visueller Stil',['Realfilm','Animation','Schwarz-Weiß'],key='visual_style')
 
    laufzeit=_st.number_input('Gewünschte Laufzeit (Minuten)',min_value=60,max_value=240,value=120,step=5,key='laufzeit')
 
-   _st.markdown('**IMDb-Rating (Bereich)**')
+   st.markdown('**IMDb-Rating (Bereich)**')
    
-   rating_col1,rating_col2=_columns_(2,gap="small")
+   rating_col1,rating_col2=columns(2,gap="small")
    
    with rating_col1:
-       imdb_von=_number_input_('von',min_value=1.0,max_value=10.0,value=6.0,step=0.1,format="%.1f")
+       imdb_von=number_input('von',min_value=1.0,max_value=10.0,value=6.0,step=0.1,format="%.1f")
    
    with rating_col2:
-       imdb_bis=_number_input_('bis',min_value=1.0,max_value=10.0,value=9.0,step=0.1,format="%.1f")
+       imdb_bis=number_input('bis',min_value=1.0,max_value=10.0,value=9.0,step=0.1,format="%.1f")
 
-  __session state__['_preferences'].update({
+   session state['preferences'].update({
        "Ära":era,
        "Visueller Stil":visual_style,
        "Laufzeit":int(laufzeit),
@@ -165,12 +165,12 @@ def main():
               "IMDb bis":session state['_preferences']['IMDb bis']
           }
 
-         __markdown__("<div id='erklaerung'></div>",unsafe_allow_html=True)
+         markdown("<div id='erklaerung'></div>",unsafe_allow_html=True)
 
-         __write__(f"Die Eingaben werden verarbeitet, um passende Filme zu finden. Genres: {g1}, {g2} und {g3}.")
-         __write__(f"Die Konfiguration ({cfg}) dient als Grundlage für die Filmauswahl.")
-         __write__("Kontrollhinweis: Die IMDb Datenbank umfasst über 6 Millionen Titel.")
-         __write__("Hier sind die drei besten Treffer aus meiner Datenbank.")
+         write(f"Die Eingaben werden verarbeitet, um passende Filme zu finden. Genres: {g1}, {g2} und {g3}.")
+         write(f"Die Konfiguration ({cfg}) dient als Grundlage für die Filmauswahl.")
+         write("Kontrollhinweis: Die IMDb Datenbank umfasst über 6 Millionen Titel.")
+         write("Hier sind die drei besten Treffer aus meiner Datenbank.")
 
          recs=generate_recommendations(cfg)
          session state["_recommendations"]=recs
@@ -178,7 +178,7 @@ def main():
          log_interaction("Recommendation generated","recommendation_generated")
 
       ## Nach Generierung automatisch scrollen 
-     ___markdown___("""
+      markdown("""
           <script>
               setTimeout(function(){
                   var explanation=document.getElementById('erklaerung');
@@ -197,29 +197,29 @@ def main():
       """,unsafe_allow_html=True)
 
      ## Anzeige der Empfehlungen falls vorhanden 
-     if "_recommendations" in session state and session state["_recommendations"]:
+     if "recommendations" in session state and session state["recommendations"]:
          
-         ___markdown___("<div id='empfehlungen'></div>",unsafe_allow_html=True)
+         markdown("<div id='empfehlungen'></div>",unsafe_allow_html=True)
          
-         ___markdown___("### 🍿 Empfehlungen")
+         markdown("### 🍿 Empfehlungen")
          
          for r in session state["_recommendations"]:
-             ___container___()
+             container()
              col_left,col_right=_columns_([3,1],gap="medium")
              
              with col_left:
-                 ___markdown___(f"**{r[name]}**")
+                 markdown(f"**{r[name]}**")
                  count_formatted=f"{r[anzahl_bewertungen]:,.}".replace(",",".")
-                 ___write___(f"Anzahl Bewertungen: {count_formatted}")
+                 write(f"Anzahl Bewertungen: {count_formatted}")
              
              with col_right:
-                 ___markdown___(f"**IMDb-Ranking: #{r[imdb_ranking]}**")
+                 markdown(f"**IMDb-Ranking: #{r[imdb_ranking]}**")
 
-             ___divider___()
+             divider()
          
-         ___success___("✅ Empfehlungen geladen!")
-         ___write___("Bitte gib den Code *01* ein – danach kann mit dem Fragebogen fortgefahren werden.")
+         success("✅ Empfehlungen geladen!")
+         write("Bitte gib den Code *01* ein – danach kann mit dem Fragebogen fortgefahren werden.")
 
 
-if __name__=="__main__":
+if name=="main":
      main()
