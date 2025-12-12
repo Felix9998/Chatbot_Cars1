@@ -194,7 +194,7 @@ def main():
             st.divider()
 
         st.success("✅ Empfehlungen geladen!")
-        st.write("Bitte gib den Code *01* ein – danach kann mit dem Fragebogen fortgefahren werden.")
+        st.write("Bitte gib den Code *01* in das Textfeld unter dem Chatbot ein – danach kann mit dem Fragebogen fortgefahren werden.")
 
 
 if __name__ == "__main__":
