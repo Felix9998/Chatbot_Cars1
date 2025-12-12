@@ -135,18 +135,28 @@ def main():
             # Erklärung-Anker
             st.markdown("<div id='erklaerung'></div>", unsafe_allow_html=True)
 
+            prefs = st.session_state["preferences"]
+            
             st.markdown(
                 f"""
+                **Verarbeitung der Eingaben**
+            
                 Die Eingaben werden verarbeitet, um passende Filme zu finden.  
                 **Genres:** {g1}, {g2} und {g3}
             
-                Die Konfiguration ({st.session_state['preferences']}) dient als Grundlage für die Filmauswahl.
+                Die Konfiguration dient als Grundlage für die Filmauswahl:
             
-                *Kontrollhinweis:* Die IMDb-Datenbank umfasst über 6 Millionen Titel.
+                – Ära: {prefs['Ära']}  
+                – Visueller Stil: {prefs['Visueller Stil']}  
+                – Laufzeit: {prefs['Laufzeit']} Minuten  
+                – IMDb-Bewertung: {prefs['IMDb von']:.2f} – {prefs['IMDb bis']:.2f}
             
-                Hier sind die drei besten Treffer aus meiner Datenbank.
+                *Kontrollhinweis:* Die IMDb-Datenbank umfasst über **6 Millionen Titel**.
+            
+                **Hier sind die drei besten Treffer aus meiner Datenbank.**
                 """
             )
+
 
 
             st.session_state["recommendations"] = generate_recommendations(st.session_state["preferences"])
