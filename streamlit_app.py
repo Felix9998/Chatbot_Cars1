@@ -87,6 +87,18 @@ def main():
         log_interaction(f"Genres selected: {selected_genres}", 'genres_selected')
 
     st.markdown("---")
+    # Automatisch zur Filmauswahl scrollen
+    st.markdown("""
+        <script>
+            var element = document.querySelector('h2:contains("Deine Filmauswahl")');
+            if (!element) {
+                // Fallback: scrolle einfach etwas weiter runter
+                window.scrollBy(0, 600);
+            } else {
+                element.scrollIntoView({behavior: 'smooth', block: 'start'});
+            }
+        </script>
+    """, unsafe_allow_html=True)
 
     # Film configuration
     st.subheader('📋 Deine Filmauswahl')
@@ -142,6 +154,30 @@ def main():
                 st.session_state['recommendations'] = recs
                 log_interaction('Recommendation generated', 'recommendation_generated')
 
+    # Nach Generierung zur Erklärung scrollen
+    st.markdown("""
+        <script>
+            setTimeout(function() {
+                var explanation = document.querySelector('p:contains("Die Eingaben werden verarbeitet")');
+                if (!explanation) {
+                    window.scrollBy(0, 400);
+                } else {
+                    explanation.scrollIntoView({behavior: 'smooth', block: 'center'});
+                }
+            }, 800);
+    
+            // Danach automatisch zu den Filmempfehlungen scrollen
+            setTimeout(function() {
+                var recommendations = document.querySelector('h3:contains("Empfehlungen")');
+                if (!recommendations) {
+                    window.scrollBy(0, 1000);
+                } else {
+                    recommendations.scrollIntoView({behavior: 'smooth', block: 'start'});
+                }
+            }, 1800);
+        </script>
+    """, unsafe_allow_html=True)
+
     # Show recommendations if available
     if st.session_state.get('recommendations'):
         st.markdown('### 🍿 Empfehlungen')
@@ -149,7 +185,7 @@ def main():
 
         for i, r in enumerate(recs):
             with st.container():
-                col_left, col_right = st.columns([3, 1], gap='medium')
+                col_left, col_right = st.columns([3, 1], gap='medium')L
                 with col_left:
                     st.markdown(f"**{r['name']}**")
                     count_formatted = f"{r['anzahl_bewertungen']:,}".replace(',', '.')
