@@ -135,10 +135,19 @@ def main():
             # Erklärung-Anker
             st.markdown("<div id='erklaerung'></div>", unsafe_allow_html=True)
 
-            st.write(f"Die Eingaben werden verarbeitet, um passende Filme zu finden. Genres: {g1}, {g2} und {g3}.")
-            st.write(f"Die Konfiguration ({st.session_state['preferences']}) dient als Grundlage für die Filmauswahl.")
-            st.write("Kontrollhinweis: Die IMDb Datenbank umfasst über 6 Millionen Titel.")
-            st.write("Hier sind die drei besten Treffer aus meiner Datenbank.")
+            st.markdown(
+                f"""
+                Die Eingaben werden verarbeitet, um passende Filme zu finden.  
+                **Genres:** {g1}, {g2} und {g3}
+            
+                Die Konfiguration ({st.session_state['preferences']}) dient als Grundlage für die Filmauswahl.
+            
+                *Kontrollhinweis:* Die IMDb-Datenbank umfasst über 6 Millionen Titel.
+            
+                Hier sind die drei besten Treffer aus meiner Datenbank.
+                """
+            )
+
 
             st.session_state["recommendations"] = generate_recommendations(st.session_state["preferences"])
             log_interaction("Recommendation generated", "recommendation_generated")
