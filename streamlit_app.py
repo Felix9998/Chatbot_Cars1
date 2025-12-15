@@ -68,13 +68,13 @@ def generate_recommendations(preferences):
             "genres": preferences["Genres"],
             "imdb_rating": rating,
             "votes": random.randint(5_000, 250_000),
-            "short_desc": "Kurzbeschreibung: Ein fiktiver Film, der als Platzhalter für das Experiment dient."
+            # short_desc bewusst entfernt (wird nicht angezeigt)
         })
     return recs
 
 
 # ----------------------------------------------------------
-# Helfer: Kriterien-Block & Abgleich pro Film
+# Helfer: Kriterien-Block
 # ----------------------------------------------------------
 
 def render_user_criteria(prefs: dict):
@@ -92,24 +92,6 @@ def render_user_criteria(prefs: dict):
     st.write(f"**Visueller Stil:** {style}")
     st.write(f"**Laufzeit:** {lmin}–{lmax} Minuten")
     st.write(f"**IMDb-Rating:** {float(imdb_min):.1f}–{float(imdb_max):.1f}")
-
-
-def render_match_block(prefs: dict, rec: dict):
-    lmin = int(prefs.get("Laufzeit von", 0))
-    lmax = int(prefs.get("Laufzeit bis", 10_000))
-    imdb_min = float(prefs.get("IMDb von", 0.0))
-    imdb_max = float(prefs.get("IMDb bis", 10.0))
-
-    runtime_ok = lmin <= int(rec["runtime"]) <= lmax
-    imdb_ok = imdb_min <= float(rec["imdb_rating"]) <= imdb_max
-    style_ok = str(rec["visual_style"]) == str(prefs.get("Visueller Stil", ""))
-
-    st.markdown("**Abgleich mit deiner Auswahl:**")
-    st.write(f"• **Jahr:** {rec['year']} (Ära-Auswahl: {prefs.get('Ära','–')})")
-    st.write(f"• **Genres:** {', '.join(rec['genres'])}")
-    st.write(f"• **Stil:** {rec['visual_style']} ({'✓ passt' if style_ok else '△ abweichend'})")
-    st.write(f"• **Laufzeit:** {rec['runtime']} Min ({'✓ im Bereich' if runtime_ok else '△ außerhalb'})")
-    st.write(f"• **IMDb:** {rec['imdb_rating']:.1f}/10 ({'✓ im Bereich' if imdb_ok else '△ außerhalb'})")
 
 
 # ----------------------------------------------------------
@@ -177,7 +159,6 @@ def main():
     with c2:
         imdb_bis = st.number_input("bis", 1.0, 10.0, value=9.0, step=0.1, format="%.1f")
 
-    # Preferences speichern (✅ Bugfix: kein "laufzeit" mehr)
     st.session_state["preferences"].update(
         {
             "Ära": era,
@@ -250,9 +231,6 @@ def main():
                 st.markdown(f"**{r['name']}** ({r['year']})")
                 st.write(f"Genre: {', '.join(r['genres'])}")
                 st.write(f"Stil: {r['visual_style']} • Laufzeit: {r['runtime']} Min")
-                st.write(r["short_desc"])
-                st.markdown("")  # kleine Luft
-                render_match_block(st.session_state["preferences"], r)
 
             with right:
                 st.markdown(f"**IMDb: {r['imdb_rating']:.1f}/10**")
@@ -263,9 +241,15 @@ def main():
         st.success("✅ Empfehlungen geladen!")
         st.write("Bitte gib den Code *01* in das Textfeld unter dem Chatbot ein – danach kann mit dem Fragebogen fortgefahren werden.")
 
+        # ✅ Hinweis unten (wie gewünscht)
+        st.caption(
+            "Hinweis: Die angezeigten Filmtitel und Inhalte sind fiktiv und dienen ausschließlich als Platzhalter für das Experiment."
+        )
+
 
 if __name__ == "__main__":
     main()
+
 
 
 
