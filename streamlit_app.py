@@ -211,7 +211,7 @@ def main():
         )
 
         st.caption(
-            "Hinweis: Die angezeigten Filmtitel und Inhalte sind fiktiv und dienen ausschließlich als Platzhalter für das Experiment."
+            "Hinweis: Die angezeigten Filmtitel und Inhalte sind fiktiv für das Experiment."
         )
 
 
