@@ -148,7 +148,13 @@ def main():
         step=5,
     )
     st.markdown("**IMDb-Rating (Bereich)**")
-    st.caption("IMDb = Filmdatenbank. Das Rating (1–10) ist ein Durchschnitt aus Nutzerbewertungen.")
+    st.caption(
+    "IMDb ist eine internationale Filmdatenbank. "
+    "Das Rating (1–10) basiert auf einer großen Anzahl von Nutzerbewertungen "
+    "und gibt an, wie positiv ein Film im Durchschnitt wahrgenommen wird. "
+    "Höhere Werte stehen für eine insgesamt bessere Bewertung."
+    )
+
     
     imdb_range = st.slider(
         "Gewünschtes IMDb-Rating",
