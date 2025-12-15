@@ -4,7 +4,6 @@ import random
 
 PRIMARY_COLOR = "#1D3557"
 
-# ✅ Muss der erste Streamlit-Call sein:
 st.set_page_config(
     page_title="CineMate — digitaler Film-Assistent",
     layout="centered",
@@ -33,11 +32,25 @@ def log_interaction(message, action):
     )
 
 # ----------------------------------------------------------
-# Dummy-Filmempfehlungen
+# Dummy-Filmempfehlungen (inkl. Kurzbeschreibungen)
 # ----------------------------------------------------------
 
 def generate_recommendations(preferences):
-    names = ["Chronos V", "Das letzte Echo", "Schatten im Nebel"]
+    films = [
+        {
+            "name": "Chronos V",
+            "short_desc": "Ein Science-Fiction-Drama über ein experimentelles Zeitsystem, das unerwartete Auswirkungen auf Vergangenheit und Gegenwart hat."
+        },
+        {
+            "name": "Das letzte Echo",
+            "short_desc": "Ein Mystery-Thriller über rätselhafte Tonaufnahmen, die in einer abgelegenen Kleinstadt alte Konflikte wieder aufleben lassen."
+        },
+        {
+            "name": "Schatten im Nebel",
+            "short_desc": "Ein stilisierter Neo-Noir über einen Ermittler, der in einem scheinbar harmlosen Fall immer tiefer in ein Netz aus Täuschung gerät."
+        }
+    ]
+
     recs = []
 
     imdb_min = float(preferences["IMDb von"])
@@ -48,7 +61,7 @@ def generate_recommendations(preferences):
 
     offsets = [0.0, -0.3, 0.2]
 
-    for i, name in enumerate(names):
+    for i, film in enumerate(films):
         rating = round(
             min(imdb_max, max(imdb_min, random.uniform(imdb_min, imdb_max) + offsets[i])),
             1
@@ -61,15 +74,16 @@ def generate_recommendations(preferences):
             year = random.randint(2000, 2024)
 
         recs.append({
-            "name": name,
+            "name": film["name"],
             "year": year,
             "runtime": runtime,
             "visual_style": preferences["Visueller Stil"],
             "genres": preferences["Genres"],
             "imdb_rating": rating,
             "votes": random.randint(5_000, 250_000),
-            # short_desc bewusst entfernt (wird nicht angezeigt)
+            "short_desc": film["short_desc"],
         })
+
     return recs
 
 
@@ -78,20 +92,16 @@ def generate_recommendations(preferences):
 # ----------------------------------------------------------
 
 def render_user_criteria(prefs: dict):
-    genres = prefs.get("Genres", [])
-    era = prefs.get("Ära", "–")
-    style = prefs.get("Visueller Stil", "–")
-    lmin = prefs.get("Laufzeit von", "–")
-    lmax = prefs.get("Laufzeit bis", "–")
-    imdb_min = prefs.get("IMDb von", "–")
-    imdb_max = prefs.get("IMDb bis", "–")
-
     st.markdown("#### 🔎 Deine Kriterien (aus deinen Eingaben)")
-    st.write(f"**Genres:** {', '.join(genres) if genres else '–'}")
-    st.write(f"**Ära:** {era}")
-    st.write(f"**Visueller Stil:** {style}")
-    st.write(f"**Laufzeit:** {lmin}–{lmax} Minuten")
-    st.write(f"**IMDb-Rating:** {float(imdb_min):.1f}–{float(imdb_max):.1f}")
+    st.write(f"**Genres:** {', '.join(prefs.get('Genres', []))}")
+    st.write(f"**Ära:** {prefs.get('Ära', '–')}")
+    st.write(f"**Visueller Stil:** {prefs.get('Visueller Stil', '–')}")
+    st.write(
+        f"**Laufzeit:** {prefs.get('Laufzeit von', '–')}–{prefs.get('Laufzeit bis', '–')} Minuten"
+    )
+    st.write(
+        f"**IMDb-Rating:** {prefs.get('IMDb von', 0):.1f}–{prefs.get('IMDb bis', 0):.1f}"
+    )
 
 
 # ----------------------------------------------------------
@@ -119,116 +129,63 @@ def main():
 
     if len(selected_genres) != 3:
         st.info("Bitte wähle genau 3 Genres aus.")
-    else:
-        st.session_state["preferences"]["Genres"] = selected_genres
-        log_interaction(f"Genres selected: {selected_genres}", "genres_selected")
-        st.write("Danke. Auswahl übernommen (nur für diese Sitzung). Bitte gib jetzt die Filterkriterien ein.")
+        return
 
-        st.markdown(
-            """
-            <script>
-                setTimeout(function() {
-                    const el = document.getElementById("filmauswahl");
-                    if (el) el.scrollIntoView({behavior:"smooth", block:"start"});
-                }, 400);
-            </script>
-            """,
-            unsafe_allow_html=True,
-        )
+    st.session_state["preferences"]["Genres"] = selected_genres
+    log_interaction(f"Genres selected: {selected_genres}", "genres_selected")
 
     st.markdown("---")
-
-    st.markdown("<div id='filmauswahl'></div>", unsafe_allow_html=True)
     st.subheader("📋 Deine Filmauswahl")
 
-    era = st.selectbox("Ära / Erscheinungszeitraum", ["Klassiker (<2000)", "Modern (2000+)"], key="era")
-    visual_style = st.selectbox("Visueller Stil", ["Realfilm", "Animation", "Schwarz-Weiß"], key="visual_style")
+    era = st.selectbox("Ära / Erscheinungszeitraum", ["Klassiker (<2000)", "Modern (2000+)"])
+    visual_style = st.selectbox("Visueller Stil", ["Realfilm", "Animation", "Schwarz-Weiß"])
 
     laufzeit_range = st.slider(
         "Gewünschte Laufzeit (Minuten, Bereich)",
-        min_value=60, max_value=240,
-        value=(90, 140), step=5,
-        key="laufzeit_range"
+        min_value=60,
+        max_value=240,
+        value=(90, 140),
+        step=5,
     )
 
     st.markdown("**IMDb-Rating (Bereich)**")
     st.caption("IMDb = Filmdatenbank. Das Rating (1–10) ist ein Durchschnitt aus Nutzerbewertungen.")
-    c1, c2 = st.columns(2, gap="small")
+    c1, c2 = st.columns(2)
     with c1:
-        imdb_von = st.number_input("von", 1.0, 10.0, value=6.0, step=0.1, format="%.1f")
+        imdb_von = st.number_input("von", 1.0, 10.0, 6.0, 0.1, format="%.1f")
     with c2:
-        imdb_bis = st.number_input("bis", 1.0, 10.0, value=9.0, step=0.1, format="%.1f")
+        imdb_bis = st.number_input("bis", 1.0, 10.0, 9.0, 0.1, format="%.1f")
 
     st.session_state["preferences"].update(
         {
             "Ära": era,
             "Visueller Stil": visual_style,
-            "Laufzeit von": int(laufzeit_range[0]),
-            "Laufzeit bis": int(laufzeit_range[1]),
-            "IMDb von": float(imdb_von),
-            "IMDb bis": float(imdb_bis),
+            "Laufzeit von": laufzeit_range[0],
+            "Laufzeit bis": laufzeit_range[1],
+            "IMDb von": imdb_von,
+            "IMDb bis": imdb_bis,
         }
     )
 
     if st.button("Empfehlung generieren"):
-        if len(st.session_state["preferences"].get("Genres", [])) != 3:
-            st.error("Bitte wähle genau drei Genres.")
-            return
-
-        log_interaction("Config saved", "config_saved")
-
         with st.spinner("CineMate verarbeitet deine Eingaben..."):
-            st.markdown("<div id='erklaerung'></div>", unsafe_allow_html=True)
-
-            prefs = st.session_state["preferences"]
-            g1, g2, g3 = prefs["Genres"]
-
-            st.markdown(
-                f"""
-                **Verarbeitung der Eingaben**
-
-                Die Eingaben werden verarbeitet, um passende Filme zu finden.  
-                **Genres:** {g1}, {g2} und {g3}
-
-                *Kontrollhinweis:* Die IMDb-Datenbank umfasst über **6 Millionen Titel**.
-
-                **Hier sind die drei besten Treffer aus meiner Datenbank.**
-                """
+            st.session_state["recommendations"] = generate_recommendations(
+                st.session_state["preferences"]
             )
-
-            st.session_state["recommendations"] = generate_recommendations(prefs)
             log_interaction("Recommendation generated", "recommendation_generated")
 
-        st.markdown(
-            """
-            <script>
-                setTimeout(function(){
-                    const e = document.getElementById("erklaerung");
-                    if (e) e.scrollIntoView({behavior:"smooth", block:"center"});
-                }, 500);
-
-                setTimeout(function(){
-                    const r = document.getElementById("empfehlungen");
-                    if (r) r.scrollIntoView({behavior:"smooth", block:"start"});
-                }, 1400);
-            </script>
-            """,
-            unsafe_allow_html=True,
-        )
-
     if st.session_state["recommendations"]:
-        st.markdown("<div id='empfehlungen'></div>", unsafe_allow_html=True)
         st.markdown("### 🍿 Empfehlungen")
 
-        # ✅ (10) Kriterien direkt mit anzeigen
         render_user_criteria(st.session_state["preferences"])
         st.markdown("---")
 
         for r in st.session_state["recommendations"]:
-            left, right = st.columns([3, 1], gap="medium")
+            left, right = st.columns([3, 1])
 
             with left:
                 st.markdown(f"**{r['name']}** ({r['year']})")
+                st.write(r["short_desc"])
                 st.write(f"Genre: {', '.join(r['genres'])}")
                 st.write(f"Stil: {r['visual_style']} • Laufzeit: {r['runtime']} Min")
 
@@ -239,9 +196,10 @@ def main():
             st.divider()
 
         st.success("✅ Empfehlungen geladen!")
-        st.write("Bitte gib den Code *01* in das Textfeld unter dem Chatbot ein – danach kann mit dem Fragebogen fortgefahren werden.")
+        st.write(
+            "Bitte gib den Code *01* in das Textfeld unter dem Chatbot ein – danach kann mit dem Fragebogen fortgefahren werden."
+        )
 
-        # ✅ Hinweis unten (wie gewünscht)
         st.caption(
             "Hinweis: Die angezeigten Filmtitel und Inhalte sind fiktiv und dienen ausschließlich als Platzhalter für das Experiment."
         )
@@ -249,6 +207,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
