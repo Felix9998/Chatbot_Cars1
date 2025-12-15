@@ -147,14 +147,17 @@ def main():
         value=(90, 140),
         step=5,
     )
-
     st.markdown("**IMDb-Rating (Bereich)**")
     st.caption("IMDb = Filmdatenbank. Das Rating (1–10) ist ein Durchschnitt aus Nutzerbewertungen.")
-    c1, c2 = st.columns(2)
-    with c1:
-        imdb_von = st.number_input("von", 1.0, 10.0, 6.0, 0.1, format="%.1f")
-    with c2:
-        imdb_bis = st.number_input("bis", 1.0, 10.0, 9.0, 0.1, format="%.1f")
+    
+    imdb_range = st.slider(
+        "Gewünschtes IMDb-Rating",
+        min_value=1.0,
+        max_value=10.0,
+        value=(6.0, 9.0),
+        step=0.1,
+    )
+
 
     st.session_state["preferences"].update(
         {
@@ -162,10 +165,11 @@ def main():
             "Visueller Stil": visual_style,
             "Laufzeit von": laufzeit_range[0],
             "Laufzeit bis": laufzeit_range[1],
-            "IMDb von": imdb_von,
-            "IMDb bis": imdb_bis,
+            "IMDb von": imdb_range[0],
+            "IMDb bis": imdb_range[1],
         }
     )
+
 
     if st.button("Empfehlung generieren"):
         with st.spinner("CineMate verarbeitet deine Eingaben..."):
